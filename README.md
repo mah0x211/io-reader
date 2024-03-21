@@ -18,18 +18,49 @@ luarocks install io-reader
 the following functions return the `error` object created by https://github.com/mah0x211/lua-errno module.
 
 
-## r, err = io.reader(f)
+## r, err = io.reader.new(f)
 
 create a new reader instance that reads data from a file or file descriptor.
 
 **Parameters**
 
-- `f:file*|integer`: file or file descriptor.
+- `f:file*|string|integer`: file, filename or file descriptor.
 
 **Returns**
 
 - `r:reader`: a reader instance.
 - `err:any`: error message.
+
+
+**Example**
+
+```lua
+local dump = require('dump')
+local reader = require('io.reader')
+local f = assert(io.tmpfile())
+f:write('hello\r\nio\r\nreader\nworld!')
+f:seek('set')
+local r = reader.new(f)
+
+-- it can read data from a file even if passed a file has been closed.
+-- cause it duplicates the file descriptor by using `dup` system call internally.
+f:close()
+
+print(dump({
+    r:read(4), -- read 4 bytes
+    r:read('L'), -- read a line with delimiter
+    r:read(), -- read a line without delimiter as default 'l'
+    r:read('a'), -- read all data from the file
+}))
+-- {
+--     [1] = "hell",
+--     [2] = "o\13\
+-- ",
+--     [3] = "io",
+--     [4] = "reader\
+-- world!"
+-- }
+```
 
 
 ## s, err, timeout = reader:read(fmt, sec)
