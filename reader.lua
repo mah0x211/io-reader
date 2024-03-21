@@ -22,27 +22,26 @@
 local find = string.find
 local match = string.match
 local sub = string.sub
-local open = io.open
 local isfile = require('io.isfile')
 local fopen = require('io.fopen')
 local fileno = require('io.fileno')
-local new_errno = require('errno').new
 local EINVAL = require('errno').EINVAL
 local readn = require('io.readn')
 local wait_readable = require('gpoll').wait_readable
 
 --- @class io.reader
---- @field private file file*
 --- @field private fd integer
+--- @field private file? file*
 --- @field private buf string
 local Reader = {}
 
 --- init
+--- @param fd integer
 --- @param f file*
 --- @return io.reader
-function Reader:init(f)
+function Reader:init(fd, f)
+    self.fd = fd
     self.file = f
-    self.fd = fileno(f)
     self.buf = ''
     return self
 end
@@ -154,42 +153,30 @@ end
 
 Reader = require('metamodule').new(Reader)
 
---- new_with_fd
---- @param fd integer
---- @return io.reader rdr
+--- new
+--- @param file string|integer|file*
+--- @return io.reader? rdr
 --- @return any err
-local function new_with_fd(fd)
-    local f, err = fopen(fd, 'r')
+local function new(file)
+    local t = type(file)
+    local f, err
+    if isfile(file) then
+        -- duplicate the file handle
+        f, err = fopen(fileno(file), 'r')
+    elseif t == 'string' or t == 'number' then
+        -- open the file
+        f, err = fopen(file, 'r')
+    else
+        return nil, EINVAL:new(
+                   'FILE*, pathname or file descriptor expected, got ' .. t)
+    end
+
     if not f then
         return nil, err
     end
-    return Reader(f)
-end
-
---- new_with_file
---- @param f file*
---- @return io.reader rdr
-local function new_with_file(f)
-    if not isfile(f) then
-        return nil, EINVAL:new('FILE* expected, got ' .. type(f))
-    end
-    return Reader(f)
-end
-
---- new
---- @param pathname string
---- @return io.reader? rdr
---- @return any err
-local function new(pathname)
-    local f, err, errno = open(pathname, 'r')
-    if err then
-        return nil, new_errno(errno, err)
-    end
-    return Reader(f)
+    return Reader(fileno(f), f)
 end
 
 return {
     new = new,
-    new_with_file = new_with_file,
-    new_with_fd = new_with_fd,
 }

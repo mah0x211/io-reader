@@ -17,8 +17,16 @@ function testcase.after_all()
 end
 
 function testcase.new()
+    local f = assert(io.tmpfile())
+    local fd = fileno(f)
+
+    -- test that create a new reader from file
+    local r, err = reader.new(f)
+    assert.is_nil(err)
+    assert.match(r, '^io.reader: ', false)
+
     -- test that create a new reader from filename
-    local r, err = reader.new(TEST_TXT)
+    r, err = reader.new(TEST_TXT)
     assert.is_nil(err)
     assert.match(r, '^io.reader: ', false)
 
@@ -26,38 +34,26 @@ function testcase.new()
     r, err = reader.new('notfound.txt')
     assert.is_nil(r)
     assert.match(err, 'ENOENT')
-end
 
-function testcase.new_with_file()
-    -- test that create a new reader from file
-    local f = assert(io.tmpfile())
-    local r, err = reader.new_with_file(f)
-    assert.is_nil(err)
-    assert.match(r, '^io.reader: ', false)
-
-    -- test that return err if file is not a file
-    r, err = reader.new_with_file(true)
-    assert.is_nil(r)
-    assert.match(err, 'FILE* expected, got boolean')
-end
-
-function testcase.new_with_fd()
     -- test that create a new reader from file descriptor
-    local f = assert(io.tmpfile())
-    local fd = fileno(f)
-    local r, err = reader.new_with_fd(fd)
+    r, err = reader.new(fd)
     assert.is_nil(err)
     assert.match(r, '^io.reader: ', false)
 
     -- test that return err if file descriptor is invalid
-    r, err = reader.new_with_fd(-1)
+    r, err = reader.new(-1)
     assert.is_nil(r)
     assert.match(err, 'EBADF')
+
+    -- test that return err if invalid type of argument
+    r, err = reader.new(true)
+    assert.is_nil(r)
+    assert.match(err, 'FILE*, pathname or file descriptor expected, got boolean')
 end
 
 function testcase.read_with_format_string()
     local f = assert(io.tmpfile())
-    local r = assert(reader.new_with_file(f))
+    local r = assert(reader.new(f))
     f:write('foo\nbar\r\nbaz\r\nqux')
     f:seek('set')
 
@@ -96,7 +92,7 @@ end
 
 function testcase.read_nbyte()
     local f = assert(io.tmpfile())
-    local r = assert(reader.new_with_file(f))
+    local r = assert(reader.new(f))
     f:write('foo\nbar\r\nbaz\r\nqux')
     f:seek('set')
 
