@@ -5,7 +5,7 @@ source = {
 }
 description = {
     summary = "A reader that reads data from a file or file descriptor.",
-    homepage = "https://github.com/mah0x211/io-reader",
+    homepage = "https://github.com/mah0x211/lua-io-reader",
     license = "MIT/X11",
     maintainer = "Masatoshi Fukunaga",
 }
