@@ -160,8 +160,6 @@ Reader = require('metamodule').new(Reader)
 --- @return io.reader? rdr
 --- @return any err
 local function new(file, sec)
-    assert(sec == nil or type(sec) == 'number', 'sec must be number or nil')
-
     local t = type(file)
     local f, err
     if isfile(file) then
@@ -178,6 +176,8 @@ local function new(file, sec)
     if not f then
         return nil, err
     end
+
+    assert(sec == nil or type(sec) == 'number', 'sec must be number or nil')
     return Reader(fileno(f), f, sec)
 end
 
