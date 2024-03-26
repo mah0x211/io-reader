@@ -25,7 +25,7 @@ create a new reader instance that reads data from a file or file descriptor.
 **Parameters**
 
 - `f:file*|string|integer`: file, filename or file descriptor.
-- `sec:number`: timeout seconds. (default `nil` means no timeout)
+- `sec:number`: timeout seconds. if `nil` or `<0`, wait forever.
 
 **Returns**
 
