@@ -32,17 +32,20 @@ local wait_readable = require('gpoll').wait_readable
 --- @class io.reader
 --- @field private fd integer
 --- @field private file? file*
+--- @field private waitsec? number
 --- @field private buf string
 local Reader = {}
 
 --- init
 --- @param fd integer
 --- @param f file*
+--- @param sec number?
 --- @return io.reader
-function Reader:init(fd, f)
+function Reader:init(fd, f, sec)
     self.fd = fd
     self.file = f
     self.buf = ''
+    self.waitsec = sec
     return self
 end
 
@@ -68,14 +71,12 @@ end
 --- read
 --- wait_readable
 --- @param fmt string|integer?
---- @param sec number?
 --- @return string? data
 --- @return any err
 --- @return boolean? timeout
-function Reader:read(fmt, sec)
+function Reader:read(fmt)
     assert(fmt == nil or type(fmt) == 'number' or type(fmt) == 'string',
            'fmt must be integer, string or nil')
-    assert(sec == nil or type(sec) == 'number', 'sec must be number or nil')
 
     local t = type(fmt)
     if t == 'number' then
@@ -90,7 +91,7 @@ function Reader:read(fmt, sec)
         local buf = self.buf
         local len = #buf
         if len < n then
-            local data, err, timeout = read(self.fd, n - len, sec)
+            local data, err, timeout = read(self.fd, n - len, self.waitsec)
             if not data then
                 return nil, err, timeout
             end
@@ -120,14 +121,14 @@ function Reader:read(fmt, sec)
             return buf
         end
         -- read all data from the file
-        return read(self.fd, nil, sec)
+        return read(self.fd, nil, self.waitsec)
     end
 
     local buf = self.buf
     local head, tail = find(buf, '\r?\n', 1)
     while not head do
         -- need to read more data
-        local data, err, timeout = read(self.fd, nil, sec)
+        local data, err, timeout = read(self.fd, nil, self.waitsec)
         if not data then
             return nil, err, timeout
         end
@@ -155,9 +156,12 @@ Reader = require('metamodule').new(Reader)
 
 --- new
 --- @param file string|integer|file*
+--- @param sec number?
 --- @return io.reader? rdr
 --- @return any err
-local function new(file)
+local function new(file, sec)
+    assert(sec == nil or type(sec) == 'number', 'sec must be number or nil')
+
     local t = type(file)
     local f, err
     if isfile(file) then
@@ -174,7 +178,7 @@ local function new(file)
     if not f then
         return nil, err
     end
-    return Reader(fileno(f), f)
+    return Reader(fileno(f), f, sec)
 end
 
 return {

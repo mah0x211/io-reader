@@ -54,6 +54,8 @@ jobs:
         luarocks install luacov
         luarocks install testcase
         luarocks install assert
+        luarocks install os-pipe
+        luarocks install time-clock
     -
       name: Install
       run: |
