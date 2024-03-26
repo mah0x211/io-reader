@@ -3,6 +3,8 @@ local testcase = require('testcase')
 local assert = require('assert')
 local fileno = require('io.fileno')
 local reader = require('io.reader')
+local pipe = require('os.pipe')
+local gettime = require('time.clock').gettime
 
 local TEST_TXT = 'test.txt'
 
@@ -25,6 +27,11 @@ function testcase.new()
     assert.is_nil(err)
     assert.match(r, '^io.reader: ', false)
 
+    -- test that create a new reader from file with timeout seconds
+    r, err = reader.new(f, 1)
+    assert.is_nil(err)
+    assert.match(r, '^io.reader: ', false)
+
     -- test that create a new reader from filename
     r, err = reader.new(TEST_TXT)
     assert.is_nil(err)
@@ -40,6 +47,13 @@ function testcase.new()
     assert.is_nil(err)
     assert.match(r, '^io.reader: ', false)
 
+    -- test that create a new reader from pipe file descriptor
+    local pr, _, perr = pipe(true)
+    assert(perr == nil, perr)
+    r, err = reader.new(pr:fd())
+    assert.is_nil(err)
+    assert.match(r, '^io.reader: ', false)
+
     -- test that return err if file descriptor is invalid
     r, err = reader.new(-1)
     assert.is_nil(r)
@@ -49,6 +63,10 @@ function testcase.new()
     r, err = reader.new(true)
     assert.is_nil(r)
     assert.match(err, 'FILE*, pathname or file descriptor expected, got boolean')
+
+    -- test that throws an error if invalid sec argument
+    err = assert.throws(reader.new, f, true)
+    assert.match(err, 'sec must be number or nil')
 end
 
 function testcase.read_with_format_string()
@@ -111,4 +129,39 @@ function testcase.read_nbyte()
     -- test that throws an error if specified negative number
     err = assert.throws(r.read, r, -1)
     assert.match(err, 'negative number')
+end
+
+function testcase.read_with_timeout()
+    local pr, pw, perr = pipe(true)
+    assert(perr == nil, perr)
+
+    -- test that read timeout after 0.5 second
+    local r = assert(reader.new(pr:fd(), .5))
+    local t = gettime()
+    local s, err, again = r:read()
+    t = gettime() - t
+    assert.is_nil(err)
+    assert.is_nil(s)
+    assert.is_true(again)
+    assert.is_true(t >= .5 and t < .6)
+
+    -- test that read line from pipe
+    pw:write('hello\nworld!\n')
+    s, err, again = r:read()
+    assert.is_nil(err)
+    assert.is_nil(again)
+    assert.equal(s, 'hello')
+
+    -- test that read line from pipe even if peer of pipe is closed
+    pw:close()
+    s, err, again = r:read()
+    assert.is_nil(err)
+    assert.is_nil(again)
+    assert.equal(s, 'world!')
+
+    -- test that return nil if eof
+    s, err, again = r:read()
+    assert.is_nil(s)
+    assert.is_nil(err)
+    assert.is_nil(again)
 end

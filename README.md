@@ -18,13 +18,14 @@ luarocks install io-reader
 the following functions return the `error` object created by https://github.com/mah0x211/lua-errno module.
 
 
-## r, err = io.reader.new(f)
+## r, err = io.reader.new( f [, sec] )
 
 create a new reader instance that reads data from a file or file descriptor.
 
 **Parameters**
 
 - `f:file*|string|integer`: file, filename or file descriptor.
+- `sec:number`: timeout seconds. (default `nil` means no timeout)
 
 **Returns**
 
@@ -63,17 +64,16 @@ print(dump({
 ```
 
 
-## s, err, timeout = reader:read(fmt, sec)
+## s, err, timeout = reader:read( [fmt] )
 
 read data from the file or file descriptor.
 
 **Parameters**
 
 - `fmt:integer|string`: size of data to read, or format string as follows: (`*` prefix can be omitted)
-  - `*a`: reads all data.
   - `*l`: reads a line. (default)
   - `*L`: reads a line with the newline character.
-- `sec:number`: timeout seconds.
+  - `*a`: reads all data.
 
 **Returns**
 
