@@ -77,6 +77,16 @@ get the file descriptor of the reader.
 - `fd:integer`: file descriptor.
 
 
+## ok, err = reader:close()
+
+close the reader.
+
+**Returns**
+
+- `ok:boolean`: `true` if succeeded.
+- `err:any`: error message.
+
+
 ## s, err, timeout = reader:read( [fmt] )
 
 read data from the file or file descriptor.
