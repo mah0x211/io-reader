@@ -22,6 +22,10 @@ the following functions return the `error` object created by https://github.com/
 
 create a new reader instance that reads data from a file or file descriptor.
 
+**NOTE**
+
+this function uses the `dup` system call internally to duplicate a file descriptor. thus, data can be read from a file even if the passed file is closed.
+
 **Parameters**
 
 - `f:file*|string|integer`: file, filename or file descriptor.
