@@ -49,6 +49,12 @@ function Reader:init(fd, f, sec)
     return self
 end
 
+--- getfd
+--- @return integer fd
+function Reader:getfd()
+    return self.fd
+end
+
 --- read
 --- @param fd integer
 --- @param count integer
