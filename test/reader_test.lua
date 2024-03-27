@@ -146,7 +146,7 @@ function testcase.read_with_timeout()
     assert.is_true(t >= .5 and t < .6)
 
     -- test that read line from pipe
-    pw:write('hello\nworld!\n')
+    pw:write('hello\nio-reader\nworld!\n')
     s, err, again = r:read()
     assert.is_nil(err)
     assert.is_nil(again)
@@ -154,6 +154,13 @@ function testcase.read_with_timeout()
 
     -- test that read line from pipe even if peer of pipe is closed
     pw:close()
+    s, err, again = r:read()
+    assert.is_nil(err)
+    assert.is_nil(again)
+    assert.equal(s, 'io-reader')
+
+    -- test that read line from pipe even if pipe is closed
+    pr:close()
     s, err, again = r:read()
     assert.is_nil(err)
     assert.is_nil(again)
