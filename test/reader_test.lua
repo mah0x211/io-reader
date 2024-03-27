@@ -187,3 +187,23 @@ function testcase.read_with_timeout()
     assert.is_nil(err)
     assert.is_nil(again)
 end
+
+function testcase.close()
+    local f = assert(io.tmpfile())
+    local r = assert(reader.new(f))
+
+    -- test that close the file associated
+    local ok, err = r:close()
+    assert.is_nil(err)
+    assert.is_true(ok)
+
+    -- test that close can be called multiple times
+    ok, err = r:close()
+    assert.is_nil(err)
+    assert.is_true(ok)
+
+    -- test that read method return error if reader is closed
+    ok, err = r:read()
+    assert.match(err, 'EBADF')
+    assert.is_nil(ok)
+end
