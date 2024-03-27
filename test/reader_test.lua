@@ -69,6 +69,21 @@ function testcase.new()
     assert.match(err, 'sec must be number or nil')
 end
 
+function testcase.getfd()
+    -- test that get file descriptor and it is duplicated from file
+    local f = assert(io.tmpfile())
+    local r = assert(reader.new(f))
+    assert.is_uint(r:getfd())
+    assert.not_equal(r:getfd(), fileno(f))
+
+    -- test that get file descriptor and it is duplicated from file descriptor
+    local pr, _, err = pipe(true)
+    assert(err == nil, err)
+    r = assert(reader.new(pr:fd()))
+    assert.is_uint(r:getfd())
+    assert.not_equal(r:getfd(), pr:fd())
+end
+
 function testcase.read_with_format_string()
     local f = assert(io.tmpfile())
     local r = assert(reader.new(f))
