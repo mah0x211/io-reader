@@ -25,9 +25,11 @@ local sub = string.sub
 local isfile = require('io.isfile')
 local fopen = require('io.fopen')
 local fileno = require('io.fileno')
-local EINVAL = require('errno').EINVAL
 local readn = require('io.readn')
 local wait_readable = require('gpoll').wait_readable
+-- constants
+local EINVAL = require('errno').EINVAL
+local EBADF = require('errno').EBADF
 
 --- @class io.reader
 --- @field private fd integer
@@ -53,6 +55,19 @@ end
 --- @return integer fd
 function Reader:getfd()
     return self.fd
+end
+
+--- close
+--- @return boolean ok
+--- @return any err
+function Reader:close()
+    local f = self.file
+    if f then
+        self.file = nil
+        self.fd = -self.fd
+        return f:close()
+    end
+    return true
 end
 
 --- read
@@ -83,6 +98,10 @@ end
 function Reader:read(fmt)
     assert(fmt == nil or type(fmt) == 'number' or type(fmt) == 'string',
            'fmt must be integer, string or nil')
+
+    if self.fd < 0 then
+        return nil, EBADF:new('reader is closed')
+    end
 
     local t = type(fmt)
     if t == 'number' then
