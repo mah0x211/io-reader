@@ -68,6 +68,15 @@ print(dump({
 ```
 
 
+## fd = reader:getfd()
+
+get the file descriptor of the reader.
+
+**Returns**
+
+- `fd:integer`: file descriptor.
+
+
 ## s, err, timeout = reader:read( [fmt] )
 
 read data from the file or file descriptor.
