@@ -77,6 +77,15 @@ get the file descriptor of the reader.
 - `fd:integer`: file descriptor.
 
 
+## reader:set_timeout( [sec] )
+
+set the timeout seconds.
+
+**Parameters**
+
+- `sec:number`: timeout seconds. if `nil` or `<0`, wait forever.
+
+
 ## ok, err = reader:close()
 
 close the reader.
