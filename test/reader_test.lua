@@ -160,6 +160,16 @@ function testcase.read_with_timeout()
     assert.is_true(again)
     assert.is_true(t >= .5 and t < .6)
 
+    -- test change timeout to 0.1 second
+    r:set_timeout(.1)
+    t = gettime()
+    s, err, again = r:read()
+    t = gettime() - t
+    assert.is_nil(err)
+    assert.is_nil(s)
+    assert.is_true(again)
+    assert.is_true(t >= .1 and t < .2)
+
     -- test that read line from pipe
     pw:write('hello\nio-reader\nworld!\n')
     s, err, again = r:read()
@@ -186,6 +196,10 @@ function testcase.read_with_timeout()
     assert.is_nil(s)
     assert.is_nil(err)
     assert.is_nil(again)
+
+    -- test that throws an error if invalid sec argument
+    err = assert.throws(r.set_timeout, r, true)
+    assert.match(err, 'sec must be number or nil')
 end
 
 function testcase.close()
