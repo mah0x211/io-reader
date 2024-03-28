@@ -22,6 +22,7 @@
 local find = string.find
 local match = string.match
 local sub = string.sub
+local type = type
 local isfile = require('io.isfile')
 local fopen = require('io.fopen')
 local fileno = require('io.fileno')
@@ -55,6 +56,13 @@ end
 --- @return integer fd
 function Reader:getfd()
     return self.fd
+end
+
+--- set_timeout
+--- @param sec? number
+function Reader:set_timeout(sec)
+    assert(sec == nil or type(sec) == 'number', 'sec must be number or nil')
+    self.waitsec = sec
 end
 
 --- close
