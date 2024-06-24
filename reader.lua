@@ -98,7 +98,6 @@ local function read(fd, count, sec)
 end
 
 --- read
---- wait_readable
 --- @param fmt string|integer?
 --- @return string? data
 --- @return any err
@@ -183,6 +182,19 @@ function Reader:read(fmt)
     local line = sub(buf, 1, tail)
     self.buf = sub(buf, tail + 1)
     return line
+end
+
+--- lines
+--- @return function
+function Reader:lines()
+    return function()
+        local line = self:read('*l')
+        if not line and self.buf ~= '' then
+            line = self.buf
+            self.buf = ''
+        end
+        return line
+    end
 end
 
 Reader = require('metamodule').new(Reader)
