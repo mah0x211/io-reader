@@ -202,6 +202,25 @@ function testcase.read_with_timeout()
     assert.match(err, 'sec must be number or nil')
 end
 
+function testcase.lines()
+    local f = assert(io.tmpfile())
+    local r = assert(reader.new(f))
+    f:write('foo\nbar\r\nbaz\r\nqux')
+    f:seek('set')
+
+    -- test that read each line
+    local lines = {
+        'foo',
+        'bar',
+        'baz',
+        'qux',
+    }
+    for line in r:lines() do
+        assert.equal(line, table.remove(lines, 1))
+    end
+    assert.equal(lines, {})
+end
+
 function testcase.close()
     local f = assert(io.tmpfile())
     local r = assert(reader.new(f))

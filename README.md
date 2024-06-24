@@ -112,3 +112,31 @@ read data from the file or file descriptor.
 - `s:string`: read data.
 - `err:any`: error message.
 - `timeout:boolean`: `true` if timed out.
+
+
+## iter = reader:lines()
+
+returns an iterator that reads a line from the file or file descriptor.
+
+**Returns**
+
+- `iter:function`: iterator function that returns a line or remaining data, or `nil` if reaches the end of the file.
+
+**Example**
+
+```lua
+local reader = require('io.reader')
+local f = assert(io.tmpfile())
+f:write('hello\r\nio\r\nreader\nworld!')
+f:seek('set')
+
+local r = reader.new(f)
+for line in r:lines() do
+    print(line)
+end
+-- hello
+-- io
+-- reader
+-- world!
+```
+
